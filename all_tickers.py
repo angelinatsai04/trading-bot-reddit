@@ -12,11 +12,3 @@ tickers = sp500_companies_df['Symbol']
 
 # Create a dictionary with company names as keys and tickers as values
 company_ticker_dict = dict(zip(company_names, tickers))
-
-# Save the dictionary to a text file
-output_file = 'company_tickers.txt'
-with open(output_file, 'w') as f:
-    for company, ticker in company_ticker_dict.items():
-        f.write(f"{company}: {ticker}\n")
-
-print(f"Company names and tickers saved to {output_file}")
