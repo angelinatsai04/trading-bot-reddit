@@ -3,16 +3,16 @@ import time
 from dotenv import load_dotenv
 import praw
 import re
-import datetime
-import pandas as pd
 import spacy
 from fuzzywuzzy import fuzz
-
+import datetime
+import pandas as pd
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Load environment variables from .env file
 load_dotenv()
 
-# connect to reddit 
+# Connect to Reddit
 reddit = praw.Reddit(
     client_id=os.getenv('REDDIT_CLIENT_ID'),
     client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
@@ -78,50 +78,35 @@ def extract_and_print_tickers(comment_or_post):
         print(f"Unique Tickers: {unique_tickers}")
         print("-" * 80)
 
-def scrape_posts(subreddit_name):
+def get_top_posts(subreddit_name, time_filter='week', limit=50):
     subreddit = reddit.subreddit(subreddit_name)
-    current_time_utc = datetime.datetime.utcnow()
-    seven_days_ago_utc = current_time_utc - datetime.timedelta(days=7)
-    
-    top_posts = []
-    for submission in subreddit.new(limit=None):
-        submission_created_utc = datetime.datetime.utcfromtimestamp(submission.created_utc)
-        if submission_created_utc >= seven_days_ago_utc:
-            top_posts.append(submission)
-    
-    top_posts_sorted = sorted(top_posts, key=lambda x: x.score, reverse=True)[:50]
+    return list(subreddit.top(time_filter=time_filter, limit=limit))
 
-    for submission in top_posts_sorted:
-        print(f'Scraping post: {submission.title}')
+def get_top_comments(submission, limit=10):
+    submission.comments.replace_more(limit=None)
+    comments_sorted = sorted(submission.comments, key=lambda comment: comment.score, reverse=True)
+    return comments_sorted[:limit]
+
+def scrape_subreddit(subreddit_name):
+    print(f'Starting to scrape subreddit: {subreddit_name} at {datetime.datetime.now()}')
+    top_posts = get_top_posts(subreddit_name)
+    
+    for submission in top_posts:
         extract_and_print_tickers(submission)
-
-def scrape_comments(subreddit_name):
-    subreddit = reddit.subreddit(subreddit_name)
-    current_time_utc = datetime.datetime.utcnow()
-    seven_days_ago_utc = current_time_utc - datetime.timedelta(days=7)
-    
-    top_posts = []
-    for submission in subreddit.new(limit=None):
-        submission_created_utc = datetime.datetime.utcfromtimestamp(submission.created_utc)
-        if submission_created_utc >= seven_days_ago_utc:
-            top_posts.append(submission)
-    
-    top_posts_sorted = sorted(top_posts, key=lambda x: x.score, reverse=True)[:50]
-
-    for submission in top_posts_sorted:
-        print(f'Scraping comments for post: {submission.title}')
-        submission.comments.replace_more(limit=None)
-        comments_sorted = sorted(submission.comments, key=lambda comment: comment.score, reverse=True)
-        top_comments = comments_sorted[:10]
+        top_comments = get_top_comments(submission)
         for comment in top_comments:
             extract_and_print_tickers(comment)
+    
+    print(f'Finished scraping subreddit: {subreddit_name} at {datetime.datetime.now()}')
 
 subreddits = ['stocks', 'wallstreetbets', 'investing']
 
 while True:
-    for subreddit in subreddits:
-        print(f'Starting to scrape subreddit: {subreddit} at {datetime.datetime.now()}')
-        scrape_posts(subreddit)
-        scrape_comments(subreddit)
-        print(f'Finished scraping subreddit: {subreddit} at {datetime.datetime.now()}')
+    with ThreadPoolExecutor(max_workers=len(subreddits)) as executor:
+        futures = [executor.submit(scrape_subreddit, subreddit) for subreddit in subreddits]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f'Error: {e}')
     time.sleep(60)  # Sleep for 60 seconds before the next scrape
