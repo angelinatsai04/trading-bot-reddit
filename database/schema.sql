@@ -9,9 +9,16 @@ CREATE TABLE reddit_posts (
 
 CREATE TABLE trades (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    stock_symbol VARCHAR(10) NOT NULL,
+    ticker VARCHAR(10) NOT NULL,
     trade_action VARCHAR(10) NOT NULL,
     trade_volume INT NOT NULL,
     trade_price FLOAT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ticker) REFERENCES sp500_companies (ticker)
+);
+
+CREATE TABLE sp500_companies (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_name VARCHAR(255) NOT NULL,
+    ticker VARCHAR(10) NOT NULL
 );
