@@ -1,68 +1,31 @@
-version: '3.8'
-
 services:
   scraper:
-    build: ./scraper
-    volumes:
-      - ./scraper:/app
+    build: ./scraper/
+    command: sh -c "sleep 10s ; python3 ./reddit_scraper.py"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
-      - REDDIT_SECRET=${REDDIT_SECRET}
-      - REDDIT_USER_AGENT=${REDDIT_USER_AGENT}
+      - DB_HOST=database
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - DB_NAME=db
     depends_on:
-      - db
-
-  #   sentiment_analysis:
-  #     build: ./sentiment_analysis
-  #     volumes:
-  #       - ./sentiment_analysis:/app
-  #     environment:
-  #       - DATABASE_URL=${DATABASE_URL}
-  #     depends_on:
-  #       - db
-  # 
-  #   trading:
-  #     build: ./trading
-  #     volumes:
-  #       - ./trading:/app
-  #     environment:
-  #       - DATABASE_URL=${DATABASE_URL}
-  #     depends_on:
-  #       - db
-  # 
-  #   dashboard:
-  #     build: ./dashboard
-  #     volumes:
-  #       - ./dashboard:/app
-  #     ports:
-  #       - "8501:8501"
-  #     environment:
-  #       - DATABASE_URL=${DATABASE_URL}
-  #     depends_on:
-  #       - db
-  # 
-  #   automation:
-  #     build: ./automation
-  #     volumes:
-  #       - ./automation:/app
-  #     environment:
-  #       - DATABASE_URL=${DATABASE_URL}
-  #     depends_on:
-  #       - db
-
-  db:
-    image: mysql:latest
+      - database
+  sp500:
+    build:
+      context: ./scraper/
+      dockerfile: Dockerfile
+    command: ["python", "./sp500.py"]
+    depends_on:
+      - database
     environment:
-      - MYSQL_DATABASE=trading_bot
-      - MYSQL_USER=youruser
-      - MYSQL_PASSWORD=yourpassword
-      - MYSQL_ROOT_PASSWORD=rootpassword
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      DB_HOST: database
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: db
+  database:
+    build: ./database/
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_ROOT_PASSWORD: 'rootpassword'
     ports:
-      - "3306:3306"
-
-volumes:
-  db_data:
+      - '3306:3306'

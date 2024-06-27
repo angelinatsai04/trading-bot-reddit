@@ -8,10 +8,14 @@ CREATE TABLE sp500_companies (
 -- Create the reddit_posts table
 CREATE TABLE reddit_posts (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    post_id VARCHAR(255) NOT NULL,
-    title TEXT NOT NULL,
-    body TEXT,
-    sentiment_score FLOAT,
+    entity_id VARCHAR(255) NOT NULL,
+    text TEXT NOT NULL,
+    tickers VARCHAR(255) NOT NULL,
+    -- id INT AUTO_INCREMENT PRIMARY KEY,
+    -- post_id VARCHAR(255) NOT NULL,
+    -- title TEXT NOT NULL,
+    -- body TEXT,
+    -- sentiment_score FLOAT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

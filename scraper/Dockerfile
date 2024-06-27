@@ -1,28 +1,19 @@
-# Use the official Python image from the Docker Hub
-FROM python:3.9-slim
+# Use a base image with build tools
+FROM python:3.9
 
-# Set the working directory in the container
-WORKDIR /app
+RUN pip install mysql-connector-python
 
-# Install system dependencies needed for mysqlclient
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    gcc \
-    g++ \
-    libmariadb-dev-compat \
-    libmariadb-dev \
-    pkg-config && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Copy the requirements.txt file into the container
+# Copy requirements file
 COPY requirements.txt .
 
-# Install any dependencies specified in requirements.txt
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code into the container
-COPY . . 
+WORKDIR /usr/app/src
 
-# Command to run the scraper script
-CMD ["python", "reddit_scraper.py"]
+# Copy the application code
+COPY reddit_scraper.py .
+COPY sp500.py .
+
+# Command to run your Python script
+CMD ["python", "./reddit_scraper.py"]
