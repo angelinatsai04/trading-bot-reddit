@@ -4,3 +4,4 @@ spacy
 fuzzywuzzy
 mysql-connector-python
 lxml
+python-Levenshtein

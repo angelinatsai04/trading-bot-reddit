@@ -7,6 +7,9 @@ services:
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: db
+      REDDIT_CLIENT_ID: DryBYMbMGq11jryH7sCAYQ
+      REDDIT_CLIENT_SECRET: SYczKAhPiQWim8scbQaFD4jB0t1Erg
+      REDDIT_USER_AGENT: tradingbot:v1.0 (by u/Responsible-Safe3079)
     volumes:
       - .:/usr/app/src
     depends_on:

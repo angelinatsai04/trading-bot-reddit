@@ -44,7 +44,7 @@ def insert_sp500_companies(companies):
         )
         cursor = cnx.cursor()
         
-        # Truncate table if needed
+        # clear table
         cursor.execute("DELETE FROM sp500_companies")
 
         # Insert each company into the table
