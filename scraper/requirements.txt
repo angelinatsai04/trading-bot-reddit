@@ -3,4 +3,3 @@ pandas
 spacy
 fuzzywuzzy
 mysql-connector-python
-yfinance

@@ -1,32 +1,5 @@
-# import os
-# import mysql.connector
-
-# db_host = os.getenv('DB_HOST')
-# db_user = os.getenv('DB_USER')
-# db_password = os.getenv('DB_PASSWORD')
-# db_name = os.getenv('DB_NAME')
-
-# print(f"DB_HOST: {db_host}")
-# print(f"DB_USER: {db_user}")
-# print(f"DB_PASSWORD: {db_password}")
-# print(f"DB_NAME: {db_name}")
-
-# try:
-#     cnx = mysql.connector.connect(
-#         host=db_host,
-#         user=db_user,
-#         password=db_password,
-#         port=3306,
-#         database=db_name
-#     )
-#     print("Successfully connected to MySQL server!")
-#     cnx.close()
-# except mysql.connector.Error as err:
-#     print(f"Error connecting to MySQL: {err}")
-#     raise
 import os
 import time
-# from dotenv import load_dotenv
 import praw
 import re
 import datetime
@@ -40,6 +13,7 @@ db_host = os.getenv('DB_HOST')
 db_user = os.getenv('DB_USER')
 db_password = os.getenv('DB_PASSWORD')
 db_name = os.getenv('DB_NAME')
+
 def load_valid_tickers():
     try:
         cnx = mysql.connector.connect(
@@ -87,54 +61,7 @@ print(company_ticker_dict)
 print("\nTicker Set:")
 print(ticker_set)
 
-# # Assume data is retrieved and stored in a list of tuples (company_name, ticker)
-# data_to_insert = [
-#     ('Company A', 'A_TICKER'),
-#     ('Company B', 'B_TICKER'),
-#     # Add more data as needed
-# ]
-
-# def insert_data_into_sp500_companies(data):
-#     try:
-#         cnx = mysql.connector.connect(
-#             host=db_host,
-#             user=db_user,
-#             password=db_password,
-#             port=3306,
-#             database=db_name
-#         )
-#         cursor = cnx.cursor()
-
-#         # Prepare SQL statement for insertion
-#         sql = "INSERT INTO sp500_companies (company_name, ticker) VALUES (%s, %s)"
-
-#         # Execute insertion for each data tuple
-#         for company_name, ticker in data:
-#             cursor.execute(sql, (company_name, ticker))
-        
-#         # Commit changes to the database
-#         cnx.commit()
-#         print(f"{cursor.rowcount} rows inserted into sp500_companies")
-
-#         cursor.close()
-#         cnx.close()
-
-#     except mysql.connector.Error as err:
-#         print(f"Error: {err}")
-#         cnx.rollback()  # Rollback changes if any error occurs
-
-# # Call function to insert data
-# insert_data_into_sp500_companies(data_to_insert)
-
 # print("here")
-
-# # Load environment variables from .env file
-# # load_dotenv()
-# db_host = os.getenv('DB_HOST')
-# db_user = os.getenv('DB_USER')
-# db_password = os.getenv('DB_PASSWORD')
-# db_name = os.getenv('DB_NAME')
-
 
 # # Connect to Reddit
 # reddit = praw.Reddit(

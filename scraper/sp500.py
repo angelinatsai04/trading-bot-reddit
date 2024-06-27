@@ -1,21 +1,35 @@
 import csv
+import pandas as pd
 import os
 import mysql.connector
 from mysql.connector import errorcode
-import yfinance as yf
 
 db_host = os.getenv('DB_HOST')
 db_user = os.getenv('DB_USER')
 db_password = os.getenv('DB_PASSWORD')
 db_name = os.getenv('DB_NAME')
 
-# Function to read S&P 500 companies from CSV
-def read_sp500_companies_from_csv(csv_file):
+# Fetch data from Wikipedia page
+data = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+
+# Assuming the first table [0] contains the S&P 500 companies data
+sp500_companies_df = data[0]
+
+# Extract company names and ticker symbols
+company_names = sp500_companies_df['Security']
+tickers = sp500_companies_df['Symbol']
+
+# Create a DataFrame with company names and tickers
+sp500_data = pd.DataFrame({
+    'company_name': company_names,
+    'ticker': tickers
+})
+
+# Function to read S&P 500 companies from DataFrame
+def read_sp500_companies_from_dataframe(df):
     companies = []
-    with open(csv_file, mode='r') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            companies.append((row['company_name'], row['ticker']))
+    for _, row in df.iterrows():
+        companies.append((row['company_name'], row['ticker']))
     return companies
 
 # Function to insert S&P 500 companies into MySQL database
@@ -52,14 +66,16 @@ def insert_sp500_companies(companies):
         cursor.close()
         cnx.close()
 
-# Example usage
+# Execution
 if __name__ == "__main__":
     db_host = "database"  # Docker service name for the database
     db_user = "root"
     db_password = "rootpassword"
     db_name = "db"
     
-    csv_file = "sp500_companies.csv"
-    companies = read_sp500_companies_from_csv(csv_file)
+    # Read data from DataFrame
+    companies = read_sp500_companies_from_dataframe(sp500_data)
     print("Fetched S&P 500 companies:", companies)  # Debugging output
+    
+    # Insert data into database
     insert_sp500_companies(companies)
