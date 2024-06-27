@@ -10,5 +10,13 @@ sp500_companies_df = data[0]
 company_names = sp500_companies_df['Security']
 tickers = sp500_companies_df['Symbol']
 
-# Create a dictionary with company names as keys and tickers as values
-company_ticker_dict = dict(zip(company_names, tickers))
+# Create a DataFrame with company names and tickers
+sp500_data = pd.DataFrame({
+    'company_name': company_names,
+    'ticker': tickers
+})
+
+# Save DataFrame to CSV
+sp500_data.to_csv('sp500_companies.csv', index=False)
+
+print("sp500_companies.csv file created successfully.")
