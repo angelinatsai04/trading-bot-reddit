@@ -7,8 +7,12 @@ services:
       - DB_USER=root
       - DB_PASSWORD=rootpassword
       - DB_NAME=db
+    volumes:
+      - .:/usr/app/src
+      - ./sp500_companies.csv:/usr/app/src/sp500_companies.csv
     depends_on:
       - database
+  
   sp500:
     build:
       context: ./scraper/
@@ -21,6 +25,7 @@ services:
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: db
+  
   database:
     build: ./database/
     restart: always

@@ -14,6 +14,7 @@ WORKDIR /usr/app/src
 # Copy the application code
 COPY reddit_scraper.py .
 COPY sp500.py .
+COPY sp500_companies.csv .
 
 # Command to run your Python script
 CMD ["python", "./reddit_scraper.py"]

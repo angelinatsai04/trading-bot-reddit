@@ -1,3 +1,4 @@
+import csv
 import os
 import mysql.connector
 from mysql.connector import errorcode
@@ -8,16 +9,14 @@ db_user = os.getenv('DB_USER')
 db_password = os.getenv('DB_PASSWORD')
 db_name = os.getenv('DB_NAME')
 
-# Function to fetch S&P 500 companies
-def fetch_sp500_companies():
-    try:
-        sp500 = yf.download('^GSPC', period='1d')
-        sp500_tickers = sp500['^GSPC']['Constituents'].tolist()
-        sp500_companies = [(ticker.info['longName'], ticker.ticker) for ticker in sp500_tickers]
-        return sp500_companies
-    except Exception as e:
-        print(f"Error fetching S&P 500 companies: {e}")
-        return []
+# Function to read S&P 500 companies from CSV
+def read_sp500_companies_from_csv(csv_file):
+    companies = []
+    with open(csv_file, mode='r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            companies.append((row['company_name'], row['ticker']))
+    return companies
 
 # Function to insert S&P 500 companies into MySQL database
 def insert_sp500_companies(companies):
@@ -30,7 +29,7 @@ def insert_sp500_companies(companies):
             database=db_name
         )
         cursor = cnx.cursor()
-
+        
         # Truncate table if needed
         cursor.execute("DELETE FROM sp500_companies")
 
@@ -60,6 +59,7 @@ if __name__ == "__main__":
     db_password = "rootpassword"
     db_name = "db"
     
-    companies = fetch_sp500_companies()
+    csv_file = "sp500_companies.csv"
+    companies = read_sp500_companies_from_csv(csv_file)
     print("Fetched S&P 500 companies:", companies)  # Debugging output
     insert_sp500_companies(companies)
