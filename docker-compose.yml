@@ -3,21 +3,20 @@ services:
     build: ./scraper/
     command: sh -c "sleep 10s ; python3 ./reddit_scraper.py"
     environment:
-      - DB_HOST=database
-      - DB_USER=root
-      - DB_PASSWORD=rootpassword
-      - DB_NAME=db
+      DB_HOST: database
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: db
     volumes:
       - .:/usr/app/src
-      - ./sp500_companies.csv:/usr/app/src/sp500_companies.csv
     depends_on:
       - database
   
   sp500:
     build:
       context: ./scraper/
-      dockerfile: Dockerfile
-    command: ["python", "./sp500.py"]
+      # dockerfile: Dockerfile
+    command: sh -c "sleep 15s ; python3 ./sp500.py"
     depends_on:
       - database
     environment:

@@ -3,3 +3,4 @@ pandas
 spacy
 fuzzywuzzy
 mysql-connector-python
+lxml

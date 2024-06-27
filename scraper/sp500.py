@@ -54,7 +54,7 @@ def insert_sp500_companies(companies):
         
         cnx.commit()
         print(f"{len(companies)} rows inserted into sp500_companies")
-        
+    
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             print("Something is wrong with your user name or password")
@@ -75,7 +75,6 @@ if __name__ == "__main__":
     
     # Read data from DataFrame
     companies = read_sp500_companies_from_dataframe(sp500_data)
-    print("Fetched S&P 500 companies:", companies)  # Debugging output
     
     # Insert data into database
     insert_sp500_companies(companies)

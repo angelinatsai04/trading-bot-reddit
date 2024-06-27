@@ -27,15 +27,24 @@ def load_valid_tickers():
 
         query = "SELECT company_name, ticker FROM sp500_companies"
         cursor.execute(query)
-
+        
         company_ticker_dict = {}
         ticker_set = set()
 
-        for (company_name, ticker) in cursor:
-            company_ticker_dict[company_name] = ticker
-            short_name = company_name.split(' ')[0]
-            company_ticker_dict[short_name] = ticker
-            ticker_set.add(ticker)
+        # Fetch all rows from the executed query
+        rows = cursor.fetchall()
+
+        if rows:
+            # print("Fetched rows:")
+            for row in rows:
+                # print(row)
+                company_name, ticker = row
+                company_ticker_dict[company_name] = ticker
+                short_name = company_name.split(' ')[0]
+                company_ticker_dict[short_name] = ticker
+                ticker_set.add(ticker)
+        else:
+            print("No rows fetched from the database.")
 
         cursor.close()
         cnx.close()
@@ -58,10 +67,9 @@ company_ticker_dict, ticker_set = load_valid_tickers()
 # Now you can use company_ticker_dict and ticker_set in your application
 print("Company-Ticker Dictionary:")
 print(company_ticker_dict)
-print("\nTicker Set:")
-print(ticker_set)
+# print("\nTicker Set:")
+# print(ticker_set)
 
-# print("here")
 
 # # Connect to Reddit
 # reddit = praw.Reddit(
