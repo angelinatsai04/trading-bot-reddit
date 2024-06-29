@@ -10,7 +10,7 @@ CREATE TABLE reddit_posts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     entity_id VARCHAR(255) NOT NULL,
     body TEXT NOT NULL,
-    tickers VARCHAR(255) NOT NULL,
+    -- tickers VARCHAR(255) NOT NULL,
     -- id INT AUTO_INCREMENT PRIMARY KEY,
     -- post_id VARCHAR(255) NOT NULL,
     -- title TEXT NOT NULL,
