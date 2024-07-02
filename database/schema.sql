@@ -5,27 +5,22 @@ CREATE TABLE sp500_companies (
     ticker VARCHAR(10) NOT NULL UNIQUE
 );
 
--- Create the reddit_posts table
+-- Create table for storing Reddit posts and comments
 CREATE TABLE reddit_posts (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    entity_id VARCHAR(255) NOT NULL,
+    entity_id VARCHAR(20) NOT NULL,
     body TEXT NOT NULL,
-    -- tickers VARCHAR(255) NOT NULL,
-    -- id INT AUTO_INCREMENT PRIMARY KEY,
-    -- post_id VARCHAR(255) NOT NULL,
-    -- title TEXT NOT NULL,
-    -- body TEXT,
-    -- sentiment_score FLOAT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME NOT NULL,
+    INDEX idx_entity_id (entity_id)
 );
 
--- Create the trades table with the foreign key constraint
-CREATE TABLE trades (
+-- Create table for storing aggregated ticker sentiment data
+CREATE TABLE tickers_sentiment (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    entity_id VARCHAR(20) NOT NULL,
     ticker VARCHAR(10) NOT NULL,
-    trade_action VARCHAR(10) NOT NULL,
-    trade_volume INT NOT NULL,
-    trade_price FLOAT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (ticker) REFERENCES sp500_companies(ticker)
+    sentiment_score FLOAT DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_entity_id (entity_id),
+    INDEX idx_ticker (ticker)
 );
