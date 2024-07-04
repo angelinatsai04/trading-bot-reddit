@@ -175,7 +175,7 @@ def save_tickers_to_db(entity_id, tickers, sentiment_score):
             cursor.execute(add_ticker, data_ticker)
         
         cnx.commit()
-        print(f"Saved tickers and sentiment for entity: {entity_id}")
+        # print(f"Saved tickers and sentiment for entity: {entity_id}")
 
     except mysql.connector.Error as err:
         print(f"Database Error: {err}")
@@ -294,8 +294,8 @@ while processed_count < 165:
             processed_count = scrape_posts(subreddit, processed_count)
         except Exception as e:
             print(f'Error scraping {subreddit}: {e}')
-    
     time.sleep(60)  # Sleep for 60 seconds before the next scrape
+    break
 
 print("Finished scraping")
 exit(0)

@@ -36,3 +36,18 @@ services:
       MYSQL_ROOT_PASSWORD: 'rootpassword'
     ports:
       - '3306:3306'
+
+  trading_bot:
+      build: ./trading/
+      command: sh -c "sleep 20s ; python3 ./trading_algorithm.py"
+      environment:
+        DB_HOST: database
+        DB_USER: root
+        DB_PASSWORD: rootpassword
+        DB_NAME: db
+        ALPACA_API_KEY: PK07EDGVQ81LO97UVFXR
+        ALPACA_API_SECRET: ApweWUBamd94diCWAt9ftKC5blCPwHf140H98LKk
+      depends_on:
+        - database
+      volumes:
+        - .:/usr/src/app
