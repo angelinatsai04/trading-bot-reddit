@@ -6,6 +6,7 @@ from lumibot.brokers import Alpaca
 from lumibot.strategies.strategy import Strategy
 from lumibot.traders import Trader
 from alpaca_trade_api import REST
+from alpaca_trade_api.rest import APIError
 from pathlib import Path
 
 # Database credentials from environment variables
@@ -17,7 +18,7 @@ db_name = os.getenv('DB_NAME')
 # Alpaca API credentials from environment variables
 API_KEY = os.getenv('ALPACA_API_KEY')
 API_SECRET = os.getenv('ALPACA_API_SECRET')
-BASE_URL = "https://paper-api.alpaca.markets/v2"
+BASE_URL = "https://paper-api.alpaca.markets"
 
 ALPACA_CREDS = {
     "API_KEY": API_KEY,
@@ -31,11 +32,22 @@ logger = logging.getLogger(__name__)
 
 class RedditSentimentTrader(Strategy):
     def initialize(self):
-        self.sleeptime = "24H"
+        self.sleeptime = "5S"
         self.last_trade = None
         self.api = REST(base_url=BASE_URL, key_id=API_KEY, secret_key=API_SECRET)
         self.sentiment_threshold = 0.2  # Adjust this threshold as needed
+        self.tickers_processed = set()  # To keep track of processed tickers
         logger.info("Trader initialized.")
+
+    def get_cash(self):
+        try:
+            account = self.api.get_account()
+            cash = float(account.cash)
+            logger.info(f"Cash position: {cash}")
+            return cash
+        except Exception as e:
+            logger.error(f"Error retrieving cash position: {e}")
+            return 0.0  # Default to 0.0 if there's an error
 
     def position_sizing(self, symbol):
         cash = self.get_cash()
@@ -66,7 +78,22 @@ class RedditSentimentTrader(Strategy):
         logger.info(f"Avg sentiment for {ticker}: {avg_sentiment}")
         return avg_sentiment
 
+    def get_position(self, ticker):
+        if ticker == "USD":
+            return None  # Handle cash separately
+        try:
+            position = self.api.get_position(ticker)
+            logger.info(f"Position for {ticker}: {position}")
+            return position
+        except APIError as e:
+            if e.status_code == 404:
+                logger.info(f"No existing position for {ticker}")
+                return None
+            else:
+                raise
+
     def on_trading_iteration(self):
+        logger.info("Starting trading iteration.")
         cnx = mysql.connector.connect(
             host=db_host,
             user=db_user,
@@ -81,38 +108,53 @@ class RedditSentimentTrader(Strategy):
         cnx.close()
 
         for ticker in tickers:
+            if ticker in self.tickers_processed:
+                continue  # Skip already processed tickers
+
             avg_sentiment = self.get_avg_sentiment(ticker)
             cash, last_price, quantity = self.position_sizing(ticker)
+            position = self.get_position(ticker)
+
+            logger.info(f"Evaluating ticker {ticker} with avg_sentiment={avg_sentiment}, cash={cash}, last_price={last_price}, position={position}")
 
             if cash > last_price:
                 if avg_sentiment > self.sentiment_threshold:
                     if self.last_trade == "sell":
+                        logger.info("Executing sell_all before buy")
                         self.sell_all()
                     order = self.create_order(
                         ticker,
                         quantity,
                         "buy",
                         type="bracket",
-                        take_profit_price=last_price * 1.20,
-                        stop_loss_price=last_price * 0.95
+                        take_profit_price=round(last_price * 1.20, 2),
+                        stop_loss_price=round(last_price * 0.95, 2)
                     )
                     self.submit_order(order)
                     logger.info(f"Placed buy order for {ticker}: {order}")
                     self.last_trade = "buy"
-                elif avg_sentiment < -self.sentiment_threshold:
+                elif avg_sentiment < -self.sentiment_threshold and position and int(position.qty) > 0:
                     if self.last_trade == "buy":
+                        logger.info("Executing sell_all before sell")
                         self.sell_all()
                     order = self.create_order(
                         ticker,
                         quantity,
                         "sell",
                         type="bracket",
-                        take_profit_price=last_price * 0.8,
-                        stop_loss_price=last_price * 1.05
+                        take_profit_price=round(last_price * 0.8, 2),
+                        stop_loss_price=round(last_price * 1.05, 2)
                     )
                     self.submit_order(order)
                     logger.info(f"Placed sell order for {ticker}: {order}")
                     self.last_trade = "sell"
+
+            self.tickers_processed.add(ticker)
+
+        # Stop the trader after processing all tickers
+        if len(self.tickers_processed) == len(tickers):
+            logger.info("All tickers processed, stopping trader.")
+            # exit(0)
 
 if __name__ == "__main__":
     broker = Alpaca(ALPACA_CREDS)
