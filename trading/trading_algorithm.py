@@ -86,7 +86,7 @@ class RedditSentimentTrader(Strategy):
             return position
         except APIError as e:
             if e.status_code == 404:
-                logger.info(f"No existing position for {ticker}")
+                # logger.info(f"No existing position for {ticker}")
                 return None
             else:
                 raise
@@ -148,7 +148,6 @@ class RedditSentimentTrader(Strategy):
 
     def stop_trading(self):
         logger.info("Stopping trading...")
-        self.broker.close_all_positions()  # Ensure all positions are closed
         exit(0)  # Exit the program
 
 
