@@ -36,6 +36,7 @@ class RedditSentimentTrader(Strategy):
         self.api = REST(base_url=BASE_URL, key_id=API_KEY, secret_key=API_SECRET)
         self.sentiment_threshold = 0.2  # Adjust this threshold as needed
         self.tickers_processed = set()  # To keep track of processed tickers
+        self.stop_flag = False  # Stop flag
         logger.info("Trader initialized.")
 
     def get_cash(self):
@@ -78,8 +79,6 @@ class RedditSentimentTrader(Strategy):
         return avg_sentiment
 
     def get_position(self, ticker):
-        if ticker == "USD":
-            return None  # Skip logging for USD
         try:
             position = self.api.get_position(ticker)
             logger.info(f"Position for {ticker}: {position}")
@@ -92,6 +91,9 @@ class RedditSentimentTrader(Strategy):
                 raise
 
     def on_trading_iteration(self):
+        if self.stop_flag:
+            return
+    
         logger.info("Starting trading iteration.")
         cnx = mysql.connector.connect(
             host=db_host,
@@ -147,8 +149,10 @@ class RedditSentimentTrader(Strategy):
             self.stop_trading()
 
     def stop_trading(self):
+        self.stop_flag = True
         logger.info("Stopping trading...")
-        exit(0)  # Exit the program
+        os._exit(0)
+        # exit(0)  # Exit the program
 
 
 if __name__ == "__main__":
