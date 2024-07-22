@@ -92,7 +92,7 @@ class RedditSentimentTrader(Strategy):
 
     def on_trading_iteration(self):
         if self.stop_flag:
-            return
+            self.stop_trading()
     
         logger.info("Starting trading iteration.")
         cnx = mysql.connector.connect(
@@ -152,7 +152,6 @@ class RedditSentimentTrader(Strategy):
         self.stop_flag = True
         logger.info("Stopping trading...")
         os._exit(0)
-        # exit(0)  # Exit the program
 
 
 if __name__ == "__main__":

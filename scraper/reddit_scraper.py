@@ -94,6 +94,7 @@ def clear_tables():
         cursor.close()
         close_db_connection(cnx)
 
+# Take ticker data from sp500_companies table and load into a dictionary
 def load_valid_tickers():
     cnx = get_db_connection()
     if not cnx:
@@ -102,10 +103,8 @@ def load_valid_tickers():
         cursor = cnx.cursor()
         query = "SELECT company_name, ticker FROM sp500_companies"
         cursor.execute(query)
-        
         company_ticker_dict = {}
         ticker_set = set()
-        # Fetch all rows from the executed query
         rows = cursor.fetchall()
 
         if rows:
@@ -130,6 +129,7 @@ def load_valid_tickers():
         cursor.close()
         close_db_connection(cnx)
 
+# Save entity id, text of each post/comment, and date of creation to reddit_posts table
 def save_to_db(entity_id, text, created_at):
     cnx = get_db_connection()
     if not cnx:
@@ -159,6 +159,7 @@ def save_to_db(entity_id, text, created_at):
 # Initialize VADER SentimentIntensityAnalyzer
 sia = SIA()
 
+# Save entity id, tickers for each entity, and sentiment score to tickers_sentiment table
 def save_tickers_to_db(entity_id, tickers, sentiment_score):
     cnx = get_db_connection()
     if not cnx:
@@ -176,7 +177,6 @@ def save_tickers_to_db(entity_id, tickers, sentiment_score):
         
         cnx.commit()
         # print(f"Saved tickers and sentiment for entity: {entity_id}")
-
     except mysql.connector.Error as err:
         print(f"Database Error: {err}")
         return
@@ -184,6 +184,7 @@ def save_tickers_to_db(entity_id, tickers, sentiment_score):
         cursor.close()
         close_db_connection(cnx)
 
+# Filter our junk scraped data
 def is_relevant_content(body):
     irrelevant_patterns = [
         "User Report",
@@ -196,6 +197,7 @@ def is_relevant_content(body):
             return False
     return True
 
+# Extracting and printing tickers in each post/comment
 def extract_and_print_tickers(comment_or_post):
     # Load valid tickers and company names
     company_ticker_dict, ticker_set = load_valid_tickers()
@@ -207,22 +209,22 @@ def extract_and_print_tickers(comment_or_post):
         text = comment_or_post.title + " " + comment_or_post.selftext
     else:
         return set()
-
+    
     # Normalize text to uppercase for uniformity
     text = text.upper()
-
+    
     # Regular expression to find potential ticker symbols (usually uppercase letters, max 5 characters)
     potential_tickers = set(re.findall(r'\b[A-Z]{1,5}\b', text))
-
+    
     # Validate potential tickers against the valid ticker set
     valid_tickers = {ticker for ticker in potential_tickers if ticker in ticker_set}
-
+   
     # Check for company names and map them to tickers
     words = text.split()
     for word in words:
         if word in company_ticker_dict:
             valid_tickers.add(company_ticker_dict[word])
-
+    
     # Additional check for variations of company names (like short names)
     for company_name in company_ticker_dict.keys():
         if company_name in text:
@@ -230,6 +232,7 @@ def extract_and_print_tickers(comment_or_post):
     
     return valid_tickers
 
+# Extracting and save to databases for each post/comment
 def extract_and_save(comment_or_post):
     if isinstance(comment_or_post, praw.models.Comment):
         entity_id = comment_or_post.id
@@ -253,6 +256,7 @@ def extract_and_save(comment_or_post):
         sentiment_score = sia.polarity_scores(body)['compound']
         save_tickers_to_db(entity_id, tickers, sentiment_score)
 
+# Scrape the top 5 posts and their corresponding top 10 comments in the defined subreddits
 def scrape_posts(subreddit_name, processed_count):
     subreddit = reddit.subreddit(subreddit_name)
     current_time_utc = datetime.datetime.utcnow()
@@ -287,6 +291,7 @@ clear_tables()
 subreddits = ['stocks', 'wallstreetbets', 'investing']
 processed_count = 0
 
+# Decided to scrape a maximum of 165 entities (for speed and simplicity)
 while processed_count < 165:
     for subreddit in subreddits:
         print(processed_count)
