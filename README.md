@@ -29,7 +29,7 @@ positive, the bot will buy one share; if sentiment is negative and shares are be
 ## Installation
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/trading-bot-reddit.git
+   git clone https://github.com/angelinatsai04/trading-bot-reddit.git
    cd trading-bot-reddit
    
 2. **Create a .env file in the root directory and add the following environment variables:**
