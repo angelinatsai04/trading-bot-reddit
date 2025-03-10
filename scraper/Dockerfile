@@ -7,10 +7,8 @@ RUN pip install mysql-connector-python
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Download spaCy model
-RUN python -m spacy download en_core_web_sm
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir --prefer-binary -r requirements.txt
 
 WORKDIR /app
 

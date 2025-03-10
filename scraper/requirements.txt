@@ -1,6 +1,7 @@
+spacy
+blis
 praw
 pandas
-spacy
 fuzzywuzzy
 mysql-connector-python
 lxml
