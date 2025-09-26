@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import mysql.connector
 from mysql.connector import errorcode
+import requests
 
 db_host = os.getenv('DB_HOST')
 db_user = os.getenv('DB_USER')
@@ -10,8 +11,10 @@ db_password = os.getenv('DB_PASSWORD')
 db_name = os.getenv('DB_NAME')
 
 # Fetch data from Wikipedia page
-data = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
-
+url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
+headers = {'User-Agent': 'Mozilla/5.0'}
+response = requests.get(url, headers=headers)
+data = pd.read_html(response.text)
 # Assuming the first table [0] contains the S&P 500 companies data
 sp500_companies_df = data[0]
 

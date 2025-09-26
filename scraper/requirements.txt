@@ -7,3 +7,4 @@ mysql-connector-python
 lxml
 python-Levenshtein
 nltk
+requests
